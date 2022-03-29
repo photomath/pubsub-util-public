@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="pubsub_util",
-    version="0.0.2",
+    version="0.0.3",
     author="Ivana Mance",
     author_email="ivana.mance@photomath.com",
     description="Util for subscribing or publishing messages to Googles PubSub topics",
@@ -16,7 +16,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",
     ],
-    package_dir={"": "src"},
-    packages=setuptools.find_packages(where="src"),
+    packages=setuptools.find_packages(),
+    py_modules=['pubsub_util'],
     python_requires=">=3.9",
 )
