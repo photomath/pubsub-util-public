@@ -31,8 +31,27 @@ def run_subscriber(
             streaming_pull_future.result()  # Block until the shutdown is complete.
 
 
+class Publisher:
+    def __init__(self, project: str, topic: str):
+        self.publisher = pubsub_v1.PublisherClient()
+        self.topic_path = self.publisher.topic_path(project, topic)
+
+    def send_bytes(self, message: bytes):
+        """Send bytes and wait for the future"""
+        future = self.publisher.publish(self.topic_path, message)
+        futures.wait([future])
+
+    def send(self, message: str):
+        """Encode with utf-8, send and wait for the future"""
+        self.send_bytes(message.encode("utf-8"))
+
+
 def publish(project: str, topic: str, message: str) -> None:
-    publisher = pubsub_v1.PublisherClient()
-    topic_path = publisher.topic_path(project, topic)
-    future = publisher.publish(topic_path, message.encode("utf-8"))
-    futures.wait([future])
+    """Create a one-off publisher, encode the message with utf-8, send and wait for
+    the future """
+    Publisher(project, topic).send(message)
+
+
+def publish_bytes(project: str, topic: str, message: bytes) -> None:
+    """Create a one-off publisher, send bytes and wait for the future"""
+    Publisher(project, topic).send_bytes(message)
