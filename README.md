@@ -2,7 +2,7 @@
 
 Util for subscribing or publishing messages to Google's PubSub subscriptions/topics.
 
-To add to your project add following lines to your readme:
+To add to your project add following lines to your requirements file:
 ```
 git+https://github.com/photomath/pubsub-util-public.git#egg=pubsub_util 
 google-cloud-pubsub
