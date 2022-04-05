@@ -38,6 +38,12 @@ class Publisher:
         self.max_futures = futures_batch_size
         self.futures = []
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self):
+        self.flush()
+
     def send_bytes(self, message: bytes):
         """Send bytes - wait only if number of futures is equal to batch size"""
         future = self.publisher.publish(self.topic_path, message)
