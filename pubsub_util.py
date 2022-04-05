@@ -32,18 +32,30 @@ def run_subscriber(
 
 
 class Publisher:
-    def __init__(self, project: str, topic: str):
+    def __init__(self, project: str, topic: str, futures_batch_size: int = 1):
         self.publisher = pubsub_v1.PublisherClient()
         self.topic_path = self.publisher.topic_path(project, topic)
+        self.max_futures = futures_batch_size
+        self.futures = []
 
     def send_bytes(self, message: bytes):
-        """Send bytes and wait for the future"""
+        """Send bytes - wait only if number of futures is equal to batch size"""
         future = self.publisher.publish(self.topic_path, message)
-        futures.wait([future])
+        self.futures.append(future)
+
+        if len(self.futures) >= self.max_futures:
+            futures.wait(self.futures)
+            self.futures.clear()
 
     def send(self, message: str):
-        """Encode with utf-8, send and wait for the future"""
+        """Encode with utf-8 and send - wait only if number of futures is equal to
+        batch size """
         self.send_bytes(message.encode("utf-8"))
+
+    def flush(self):
+        """Wait for all unfinished futures"""
+        futures.wait(self.futures)
+        self.futures.clear()
 
 
 def publish(project: str, topic: str, message: str) -> None:
