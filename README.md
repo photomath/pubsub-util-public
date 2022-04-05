@@ -2,6 +2,12 @@
 
 Util for subscribing or publishing messages to Google's PubSub subscriptions/topics.
 
+To add to your project add following lines to your readme:
+```
+git+https://github.com/photomath/pubsub-util-public.git#egg=pubsub_util 
+google-cloud-pubsub
+```
+
 ## run_subscriber
 
 Creates and a subscriber to some PubSub subscription. A callback function will be called for each new message. This 
@@ -22,3 +28,9 @@ Publishes bytes to a given PubSub topic
 Creates a publisher client and reuses it to send messages to a single pubsub topic.
 Awaits futures in batches - dictated by futures_batch_size parameter, or by calling 
 flush()
+
+It is advised to use publisher using `with`:
+```
+with Publisher(project, topic, max_futures) as p:
+    p.send(msg)
+```
