@@ -44,8 +44,7 @@ class Publisher:
         self.futures.append(future)
 
         if len(self.futures) >= self.max_futures:
-            futures.wait(self.futures)
-            self.futures.clear()
+            self.flush()
 
     def send(self, message: str):
         """Encode with utf-8 and send - wait only if number of futures is equal to
