@@ -1,5 +1,5 @@
 from concurrent import futures
-from typing import Callable, Dict, Optional, Union
+from typing import Callable, Union
 
 from google.cloud import pubsub_v1
 
