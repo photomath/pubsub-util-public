@@ -1,15 +1,15 @@
 from concurrent import futures
-from typing import Callable
+from typing import Callable, Union
 
 from google.cloud import pubsub_v1
 
 
 def run_subscriber(
-        project_id: str,
-        subscription_id: str,
-        callback: Callable[[pubsub_v1.subscriber.message.Message], None],
-        timeout: int = None,
-        max_concurrent_messages: int = 1000  # pubsub_v1.types.FlowControl default
+    project_id: str,
+    subscription_id: str,
+    callback: Callable[[pubsub_v1.subscriber.message.Message], None],
+    timeout: int = None,
+    max_concurrent_messages: int = 1000,  # pubsub_v1.types.FlowControl default
 ):
     subscriber = pubsub_v1.SubscriberClient()
     subscription_path = subscriber.subscription_path(project_id, subscription_id)
@@ -44,18 +44,30 @@ class Publisher:
     def __exit__(self, exc_type, exc_value, exc_traceback):
         self.flush()
 
-    def send_bytes(self, message: bytes):
+    def send_bytes(
+        self,
+        message: bytes,
+        ordering_key: str = "",
+        **attrs: Union[bytes, str],
+    ):
         """Send bytes - wait only if number of futures is equal to batch size"""
-        future = self.publisher.publish(self.topic_path, message)
+        future = self.publisher.publish(
+            self.topic_path, message, ordering_key=ordering_key, **attrs
+        )
         self.futures.append(future)
 
         if len(self.futures) >= self.max_futures:
             self.flush()
 
-    def send(self, message: str):
+    def send(
+        self,
+        message: str,
+        ordering_key: str = "",
+        **attrs: Union[bytes, str],
+    ):
         """Encode with utf-8 and send - wait only if number of futures is equal to
-        batch size """
-        self.send_bytes(message.encode("utf-8"))
+        batch size"""
+        self.send_bytes(message.encode("utf-8"), ordering_key, **attrs)
 
     def flush(self):
         """Wait for all unfinished futures"""
@@ -63,12 +75,24 @@ class Publisher:
         self.futures.clear()
 
 
-def publish(project: str, topic: str, message: str) -> None:
+def publish(
+    project: str,
+    topic: str,
+    message: str,
+    ordering_key: str = "",
+    **attrs: Union[bytes, str],
+) -> None:
     """Create a one-off publisher, encode the message with utf-8, send and wait for
-    the future """
-    Publisher(project, topic).send(message)
+    the future"""
+    Publisher(project, topic).send(message, ordering_key, **attrs)
 
 
-def publish_bytes(project: str, topic: str, message: bytes) -> None:
+def publish_bytes(
+    project: str,
+    topic: str,
+    message: bytes,
+    ordering_key: str = "",
+    **attrs: Union[bytes, str],
+) -> None:
     """Create a one-off publisher, send bytes and wait for the future"""
-    Publisher(project, topic).send_bytes(message)
+    Publisher(project, topic).send_bytes(message, ordering_key, **attrs)
